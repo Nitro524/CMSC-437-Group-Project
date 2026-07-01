@@ -5,18 +5,16 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <div>
-          <h2>437 Air</h2>
-          <p>In-Flight System</p>
-        </div>
+        <h2>437 Air</h2>
+        <p>In-Flight System</p>
       </div>
 
       <div className="nav-links">
-        <NavLink to="/">Home</NavLink>
-        <NavLink to="/entertainment">Entertainment</NavLink>
-        <NavLink to="/flight">Flight</NavLink>
-        <NavLink to="/services">Services</NavLink>
-        <NavLink to="/profile">Profile</NavLink>
+        <NavLink to="/app">Home</NavLink>
+        <NavLink to="/app/entertainment">Entertainment</NavLink>
+        <NavLink to="/app/flight">Flight</NavLink>
+        <NavLink to="/app/services">Services</NavLink>
+        <NavLink to="/app/profile">Profile</NavLink>
       </div>
     </nav>
   );

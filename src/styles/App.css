@@ -1,9 +1,57 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #f4f7fb;
+}
+
+.app {
+  min-height: 100vh;
 }
 
 .page-container {
   padding: 30px;
+  min-height: calc(100vh - 86px);
+}
+
+/* Theme */
+
+.light {
+  background-color: #f4f7fb;
+  color: #1d2b3a;
+}
+
+.dark {
+  background-color: #111827;
+  color: white;
+}
+
+.dark .profile-card {
+  background-color: #1f2937;
+  color: white;
+}
+
+.dark .profile-card h2 {
+  color: white;
+}
+
+.dark .profile-card p,
+.dark .profile-intro {
+  color: #d1d5db;
+}
+
+.dark .profile-card label {
+  color: #e5e7eb;
+}
+
+/* Text size */
+
+.normal {
+  font-size: 16px;
+}
+
+.large {
+  font-size: 20px;
 }

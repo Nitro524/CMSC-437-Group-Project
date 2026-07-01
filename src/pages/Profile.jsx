@@ -1,39 +1,85 @@
-export default Profile;
+import { useState } from "react";
+import "../styles/Profile.css";
 
 function Profile() {
+  const savedMode = sessionStorage.getItem("userMode") || "guest";
+  const savedName = sessionStorage.getItem("passengerName") || "Guest Passenger";
+
+  const [mode] = useState(savedMode);
+  const [name] = useState(savedName);
+
+  const [textSize, setTextSize] = useState(
+    sessionStorage.getItem("textSize") || "Normal"
+  );
+
+  const [theme, setTheme] = useState(
+    sessionStorage.getItem("theme") || "Light"
+  );
+
+  function savePreferences() {
+    if (mode === "guest") {
+      alert("Guest users cannot save preferences.");
+      return;
+    }
+
+    sessionStorage.setItem("textSize", textSize);
+    sessionStorage.setItem("theme", theme);
+
+    alert("Preferences saved for this flight session.");
+    window.location.reload();
+  }
+
   return (
-    <div>
-      <h1>Profile</h1>
+    <div className="profile-page">
+      <h1>User Profile</h1>
+      <p className="profile-intro">
+        Manage your passenger profile and flight session preferences.
+      </p>
 
-      <section>
-        <h2>Continue as Guest</h2>
-        <p>Guest users can use the system, but preferences will not be saved.</p>
-        <button>Continue as Guest</button>
+      <section className="profile-card">
+        <h2>Current User</h2>
+        <p>
+          <strong>Mode:</strong> {mode === "guest" ? "Guest" : "Profile"}
+        </p>
+        <p>
+          <strong>Name:</strong> {name}
+        </p>
+
+        {mode === "guest" && (
+          <p className="guest-warning">
+            Guest users can use the system, but preferences cannot be saved.
+          </p>
+        )}
       </section>
 
-      <section>
-        <h2>Create Profile</h2>
-        <input placeholder="Enter passenger name" />
-        <button>Create Profile</button>
-      </section>
-
-      <section>
+      <section className="profile-card">
         <h2>Preferences</h2>
-        <label>Language</label>
-        <select>
-          <option>English</option>
-          <option>Spanish</option>
-          <option>Japanese</option>
-        </select>
 
-        <label>Text Size</label>
-        <select>
-          <option>Normal</option>
-          <option>Large</option>
-        </select>
+        <div className="form-row">
+          <div>
+            <label>Text Size</label>
+            <select
+              value={textSize}
+              onChange={(e) => setTextSize(e.target.value)}
+            >
+              <option>Normal</option>
+              <option>Large</option>
+            </select>
+          </div>
 
-        <button>Save Preferences</button>
+          <div>
+            <label>Theme</label>
+            <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+              <option>Light</option>
+              <option>Dark</option>
+            </select>
+          </div>
+        </div>
+
+        <button onClick={savePreferences}>Save Preferences</button>
       </section>
     </div>
   );
 }
+
+export default Profile;

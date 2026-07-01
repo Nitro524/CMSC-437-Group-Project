@@ -1,0 +1,86 @@
+.profile-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 35px 20px;
+  color: #1d2b3a;
+}
+
+.profile-page h1 {
+  text-align: center;
+  margin-bottom: 8px;
+  color: #061a33;
+}
+
+.profile-intro {
+  text-align: center;
+  color: #64748b;
+  margin-bottom: 30px;
+}
+
+.profile-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.profile-card h2 {
+  margin-top: 0;
+  color: #061a33;
+}
+
+.profile-card p {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.profile-card label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #334155;
+}
+
+.profile-card select {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.profile-card button {
+  background-color: #1d75d8;
+  color: white;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.profile-card button:hover {
+  background-color: #155ca8;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.guest-warning {
+  background-color: #fff4db;
+  color: #92400e !important;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+@media (max-width: 700px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
