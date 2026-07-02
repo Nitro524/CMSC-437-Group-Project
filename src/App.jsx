@@ -3,10 +3,10 @@ import Welcome from "./pages/Welcome";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Entertainment from "./pages/Entertainment";
-import Flight from "./pages/Flight";
 import Services from "./pages/Services";
 import Profile from "./pages/Profile";
 import "./styles/App.css";
+import Flight from "./pages/Flight";
 
 function App() {
   const theme = sessionStorage.getItem("theme") || "Light";
