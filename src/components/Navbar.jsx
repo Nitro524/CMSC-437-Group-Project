@@ -14,6 +14,7 @@ function Navbar() {
         <NavLink to="/app/entertainment">Entertainment</NavLink>
         <NavLink to="/app/flight">Flight</NavLink>
         <NavLink to="/app/services">Services</NavLink>
+        <NavLink to="/app/food">Food</NavLink>
         <NavLink to="/app/profile">Profile</NavLink>
       </div>
     </nav>

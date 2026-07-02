@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Entertainment from "./pages/Entertainment";
 import Services from "./pages/Services";
+import Food from "./pages/Food";
 import Profile from "./pages/Profile";
 import "./styles/App.css";
 import Flight from "./pages/Flight";
@@ -23,6 +24,7 @@ function App() {
             <Route path="entertainment" element={<Entertainment />} />
             <Route path="flight" element={<Flight />} />
             <Route path="services" element={<Services />} />
+            <Route path="food" element={<Food />} />
             <Route path="profile" element={<Profile />} />
           </Route>
         </Routes>
