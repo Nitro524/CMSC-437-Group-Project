@@ -1,14 +1,24 @@
 import { useState } from "react";
 import food from "../data/food";
 import drinks from "../data/drinks";
-import "../styles/Food.css";
+import "../styles/Entertainment.css";
 
 function Food() {
   const [category, setCategory] = useState("Food");
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const savedFavorites = JSON.parse(sessionStorage.getItem("favorites")) || [];
-  const [favorites, setFavorites] = useState(savedFavorites);
+  const savedCart = JSON.parse(sessionStorage.getItem("cart")) || [];
+  const [cart, setCart] = useState(savedCart);
+
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [checkoutForm, setCheckoutForm] = useState({
+    name: "",
+    seatNumber: "",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCVC: "",
+  });
 
   const userMode = sessionStorage.getItem("userMode") || "guest";
   const allContent = [...food, ...drinks];
@@ -18,32 +28,118 @@ function Food() {
       ? allContent.filter((item) => item.type === "Food")
       : category === "Drinks"
       ? allContent.filter((item) => item.type === "Drink")
-      : favorites;
+      : [];
 
-  function isFavorite(item) {
-    return favorites.some(
-      (favorite) => favorite.id === item.id && favorite.type === item.type
+  function getCartEntry(item) {
+    return cart.find(
+      (entry) => entry.id === item.id && entry.type === item.type
     );
   }
 
-  function toggleFavorite(item) {
+  function saveCart(updatedCart) {
+    setCart(updatedCart);
+    sessionStorage.setItem("cart", JSON.stringify(updatedCart));
+  }
+
+  function addToCart(item, quantity = 1) {
     if (userMode === "guest") {
-      alert("Guest users cannot save favorites. Please create a profile first.");
+      alert("Guest users cannot order. Please create a profile first.");
       return;
     }
 
-    let updatedFavorites;
+    const existing = getCartEntry(item);
+    let updatedCart;
 
-    if (isFavorite(item)) {
-      updatedFavorites = favorites.filter(
-        (favorite) => !(favorite.id === item.id && favorite.type === item.type)
+    if (existing) {
+      updatedCart = cart.map((entry) =>
+        entry.id === item.id && entry.type === item.type
+          ? { ...entry, quantity: entry.quantity + quantity }
+          : entry
       );
     } else {
-      updatedFavorites = [...favorites, item];
+      updatedCart = [...cart, { ...item, quantity }];
     }
 
-    setFavorites(updatedFavorites);
-    sessionStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    saveCart(updatedCart);
+  }
+
+  function changeQuantity(item, delta) {
+    const existing = getCartEntry(item);
+    if (!existing) return;
+
+    const newQuantity = existing.quantity + delta;
+
+    let updatedCart;
+    if (newQuantity <= 0) {
+      updatedCart = cart.filter(
+        (entry) => !(entry.id === item.id && entry.type === item.type)
+      );
+    } else {
+      updatedCart = cart.map((entry) =>
+        entry.id === item.id && entry.type === item.type
+          ? { ...entry, quantity: newQuantity }
+          : entry
+      );
+    }
+
+    saveCart(updatedCart);
+  }
+
+  function removeFromCart(item) {
+    const updatedCart = cart.filter(
+      (entry) => !(entry.id === item.id && entry.type === item.type)
+    );
+    saveCart(updatedCart);
+  }
+
+  function parsePrice(price) {
+    if (!price) return 0;
+    const parsed = parseFloat(String(price).replace(/[^0-9.]/g, ""));
+    return isNaN(parsed) ? 0 : parsed;
+  }
+
+  const cartCount = cart.reduce((sum, entry) => sum + entry.quantity, 0);
+  const cartTotal = cart.reduce(
+    (sum, entry) => sum + parsePrice(entry.price) * entry.quantity,
+    0
+  );
+
+  function handleCheckoutFieldChange(field, value) {
+    setCheckoutForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function openCheckout() {
+    if (userMode === "guest") {
+      alert("Guest users cannot order. Please create a profile first.");
+      return;
+    }
+    if (cart.length === 0) return;
+    setCheckoutOpen(true);
+  }
+
+  function placeOrder(e) {
+    e.preventDefault();
+
+    if (!checkoutForm.name.trim() || !checkoutForm.seatNumber.trim()) {
+      alert("Please enter your name and seat number to place the order.");
+      return;
+    }
+
+    // Card details are optional, billed to seat if not provided
+    setOrderConfirmed(true);
+    saveCart([]);
+    setCheckoutOpen(false);
+  }
+
+  function startNewOrder() {
+    setOrderConfirmed(false);
+    setCheckoutForm({
+      name: "",
+      seatNumber: "",
+      cardNumber: "",
+      cardExpiry: "",
+      cardCVC: "",
+    });
   }
 
   return (
@@ -56,20 +152,18 @@ function Food() {
       </div>
 
       <div className="category-buttons">
-        {["Food", "Drinks", "Favorites"].map(
-          (item) => (
-            <button
-              key={item}
-              className={category === item ? "active-category" : ""}
-              onClick={() => {
-                setCategory(item);
-                setSelectedItem(null);
-              }}
-            >
-              {item}
-            </button>
-          )
-        )}
+        {["Food", "Drinks", "Cart"].map((item) => (
+          <button
+            key={item}
+            className={category === item ? "active-category" : ""}
+            onClick={() => {
+              setCategory(item);
+              setSelectedItem(null);
+            }}
+          >
+            {item === "Cart" ? `Cart (${cartCount})` : item}
+          </button>
+        ))}
       </div>
 
       {selectedItem ? (
@@ -103,54 +197,203 @@ function Food() {
                 <strong>Rating:</strong> {selectedItem.rating}
               </p>
 
-              <button
-                className="favorite-button"
-                onClick={() => toggleFavorite(selectedItem)}
-              >
-                {isFavorite(selectedItem)
-                  ? "❤️ Favorited"
-                  : "♡ Add to Favorites"}
-              </button>
+              {getCartEntry(selectedItem) ? (
+                <div className="quantity-stepper">
+                  <button onClick={() => changeQuantity(selectedItem, -1)}>−</button>
+                  <span>{getCartEntry(selectedItem).quantity} in cart</span>
+                  <button onClick={() => changeQuantity(selectedItem, 1)}>+</button>
+                </div>
+              ) : (
+                <button
+                  className="favorite-button"
+                  onClick={() => addToCart(selectedItem)}
+                >
+                  + Add to Order
+                </button>
+              )}
             </div>
           </div>
+        </section>
+      ) : category === "Cart" ? (
+        <section className="cart-panel">
+          <h2>Your Order</h2>
+
+          {orderConfirmed ? (
+            <div className="order-confirmation">
+              <p>
+                Thanks, {checkoutForm.name}! Your order has been sent to seat{" "}
+                {checkoutForm.seatNumber}.
+              </p>
+              <button className="favorite-button" onClick={startNewOrder}>
+                Start a New Order
+              </button>
+            </div>
+          ) : cart.length === 0 ? (
+            <p className="empty-message">
+              Your cart is empty. Add food or drinks to place an order.
+            </p>
+          ) : (
+            <>
+              <div className="content-grid">
+                {cart.map((entry) => (
+                  <div className="content-card" key={`${entry.type}-${entry.id}`}>
+                    <div className="poster">
+                      <img src={entry.image} alt={entry.name} />
+                    </div>
+
+                    <span className="content-type">{entry.type}</span>
+                    <h3>{entry.name}</h3>
+                    {entry.price && (
+                      <p>
+                        {entry.price} × {entry.quantity} = $
+                        {(parsePrice(entry.price) * entry.quantity).toFixed(2)}
+                      </p>
+                    )}
+
+                    <div className="quantity-stepper">
+                      <button onClick={() => changeQuantity(entry, -1)}>−</button>
+                      <span>{entry.quantity}</span>
+                      <button onClick={() => changeQuantity(entry, 1)}>+</button>
+                    </div>
+
+                    <button
+                      className="favorite-button"
+                      onClick={() => removeFromCart(entry)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="cart-summary">
+                <p>
+                  <strong>Total:</strong> ${cartTotal.toFixed(2)}
+                </p>
+                <button className="favorite-button" onClick={openCheckout}>
+                  Proceed to Checkout
+                </button>
+              </div>
+
+              {checkoutOpen && (
+                <form className="checkout-form" onSubmit={placeOrder}>
+                  <h3>Checkout</h3>
+
+                  <label>
+                    Name
+                    <input
+                      type="text"
+                      value={checkoutForm.name}
+                      onChange={(e) =>
+                        handleCheckoutFieldChange("name", e.target.value)
+                      }
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    Seat Number
+                    <input
+                      type="text"
+                      value={checkoutForm.seatNumber}
+                      onChange={(e) =>
+                        handleCheckoutFieldChange("seatNumber", e.target.value)
+                      }
+                      required
+                    />
+                  </label>
+
+                  <p className="checkout-note">
+                    Card details are optional. Leave blank to bill the order to
+                    your seat instead.
+                  </p>
+
+                  <label>
+                    Card Number
+                    <input
+                      type="text"
+                      value={checkoutForm.cardNumber}
+                      onChange={(e) =>
+                        handleCheckoutFieldChange("cardNumber", e.target.value)
+                      }
+                      placeholder="•••• •••• •••• ••••"
+                    />
+                  </label>
+
+                  <label>
+                    Expiry
+                    <input
+                      type="text"
+                      value={checkoutForm.cardExpiry}
+                      onChange={(e) =>
+                        handleCheckoutFieldChange("cardExpiry", e.target.value)
+                      }
+                      placeholder="MM/YY"
+                    />
+                  </label>
+
+                  <label>
+                    CVC
+                    <input
+                      type="text"
+                      value={checkoutForm.cardCVC}
+                      onChange={(e) =>
+                        handleCheckoutFieldChange("cardCVC", e.target.value)
+                      }
+                      placeholder="123"
+                    />
+                  </label>
+
+                  <button type="submit" className="favorite-button">
+                    Place Order (${cartTotal.toFixed(2)})
+                  </button>
+                </form>
+              )}
+            </>
+          )}
         </section>
       ) : (
         <>
           <h2>{category} Catalog</h2>
 
-          {category === "Favorites" && favorites.length === 0 ? (
-            <p className="empty-message">
-              No favorites saved yet. Add food or drinks to see them here.
-            </p>
-          ) : (
-            <div className="content-grid">
-              {filteredContent.map((item) => (
-                <div
-                  className="content-card"
-                  key={`${item.type}-${item.id}`}
-                  onClick={() => setSelectedItem(item)}
-                >
-                  <div className="poster">
-                    <img src={item.image} alt={item.name} />
+          <div className="content-grid">
+            {filteredContent.map((item) => (
+              <div
+                className="content-card"
+                key={`${item.type}-${item.id}`}
+                onClick={() => setSelectedItem(item)}
+              >
+                <div className="poster">
+                  <img src={item.image} alt={item.name} />
+                </div>
+
+                <span className="content-type">{item.type}</span>
+                <h3>{item.name}</h3>
+                <p>{item.genre}</p>
+
+                {getCartEntry(item) ? (
+                  <div
+                    className="quantity-stepper"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button onClick={() => changeQuantity(item, -1)}>−</button>
+                    <span>{getCartEntry(item).quantity}</span>
+                    <button onClick={() => changeQuantity(item, 1)}>+</button>
                   </div>
-
-                  <span className="content-type">{item.type}</span>
-                  <h3>{item.name}</h3>
-                  <p>{item.genre}</p>
-
+                ) : (
                   <button
                     className="favorite-button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavorite(item);
+                      addToCart(item);
                     }}
                   >
-                    {isFavorite(item) ? "❤️ Favorited" : "♡ Add to Favorites"}
+                    + Add to Order
                   </button>
-                </div>
-              ))}
-            </div>
-          )}
+                )}
+              </div>
+            ))}
+          </div>
         </>
       )}
     </div>

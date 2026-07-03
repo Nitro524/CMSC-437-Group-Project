@@ -1,9 +1,10 @@
 import { useState } from "react";
-import products from "../data/products";
-import "../styles/Entertainment.css";
+import food from "../data/food";
+import drinks from "../data/drinks";
+import "../styles/Food.css";
 
-function Shop() {
-  const [category, setCategory] = useState("Products");
+function Food() {
+  const [category, setCategory] = useState("Food");
   const [selectedItem, setSelectedItem] = useState(null);
 
   const savedCart = JSON.parse(sessionStorage.getItem("cart")) || [];
@@ -20,11 +21,13 @@ function Shop() {
   });
 
   const userMode = sessionStorage.getItem("userMode") || "guest";
-  const allContent = [...products];
+  const allContent = [...food, ...drinks];
 
   const filteredContent =
-    category === "Products"
-      ? allContent.filter((item) => item.type === "Products")
+    category === "Food"
+      ? allContent.filter((item) => item.type === "Food")
+      : category === "Drinks"
+      ? allContent.filter((item) => item.type === "Drink")
       : [];
 
   function getCartEntry(item) {
@@ -122,7 +125,8 @@ function Shop() {
       return;
     }
 
-    // Card details are optional, billed to seat if not provided
+    // Card details are optional — if provided, they'd be sent to a payment
+    // processor here. If left blank, the order is billed to the seat.
     setOrderConfirmed(true);
     saveCart([]);
     setCheckoutOpen(false);
@@ -142,14 +146,14 @@ function Shop() {
   return (
     <div className="entertainment-page">
       <div className="entertainment-hero">
-        <h1>Products</h1>
+        <h1>Food</h1>
         <p>
-          Order from our duty-free airline shopping catalog.
+          Order food and drinks, straight to your seat.
         </p>
       </div>
 
       <div className="category-buttons">
-        {["Products"].map((item) => (
+        {["Food", "Drinks", "Cart"].map((item) => (
           <button
             key={item}
             className={category === item ? "active-category" : ""}
@@ -227,7 +231,7 @@ function Shop() {
             </div>
           ) : cart.length === 0 ? (
             <p className="empty-message">
-              Your cart is empty. Add items to place an order.
+              Your cart is empty. Add food or drinks to place an order.
             </p>
           ) : (
             <>
@@ -306,7 +310,7 @@ function Shop() {
                   </p>
 
                   <label>
-                    Card Number
+                    Card Number (optional)
                     <input
                       type="text"
                       value={checkoutForm.cardNumber}
@@ -318,7 +322,7 @@ function Shop() {
                   </label>
 
                   <label>
-                    Expiry
+                    Expiry (optional)
                     <input
                       type="text"
                       value={checkoutForm.cardExpiry}
@@ -330,7 +334,7 @@ function Shop() {
                   </label>
 
                   <label>
-                    CVC
+                    CVC (optional)
                     <input
                       type="text"
                       value={checkoutForm.cardCVC}
@@ -397,4 +401,4 @@ function Shop() {
   );
 }
 
-export default Shop;
+export default Food;
